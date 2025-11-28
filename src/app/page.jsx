@@ -4,49 +4,68 @@ import { BreweriesStore } from "../store/zustand";
 import { useEffect, useRef, useState } from "react";
 import { getAllBreweriesApi } from "../services/api";
 import Factory from "../components/Factory";
-import { selectBreweries, selectFavorite } from "../store/selectors";
+import {
+  selectBreweries,
+  selectBufferBreweries,
+  selectSelected,
+} from "../store/selectors";
 
 export default function Home() {
-  const [selected, setSelected] = useState([]);
+  const [count, setCount] = useState(1);
 
-  const [perPage, setPerPage] = useState(15);
   const [page, setPage] = useState(1);
 
   const observerRef = useRef(null);
   const firstLoad = useRef(true);
 
+  const bufferBreweries = BreweriesStore(selectBufferBreweries);
+
   const updateBreweries = BreweriesStore((state) => state.setBreweries);
 
-  const deleteAllFromFavorite = BreweriesStore(
-    (state) => state.deleteAllFromFavorite
+  const deleteAllFromSelected = BreweriesStore(
+    (state) => state.deleteAllFromSelected
+  );
+
+  const setBufferBreweries = BreweriesStore(
+    (state) => state.setBufferBreweries
   );
 
   const breweries = BreweriesStore(selectBreweries);
 
-  const favorite = BreweriesStore(selectFavorite);
+  const selected = BreweriesStore(selectSelected);
 
-  const filtered = breweries.filter(
-    (item) => !selected.some((del) => del.id === item.id)
-  );
-
-  useEffect(() => {
-    async function getAllBreweries() {
-      const data = await getAllBreweriesApi(perPage, page);
-
-      updateBreweries(data);
-    }
-
-    getAllBreweries();
-  }, [updateBreweries, page, perPage]);
-
-  function deleteFactory() {
-    setSelected(favorite);
-    setPerPage((prev) => prev + favorite.length);
-    deleteAllFromFavorite();
+  async function getBufferData() {
+    const buffer = await getAllBreweriesApi(page + count);
+    setBufferBreweries(buffer);
   }
 
-  function loadMore() {
-    setPage((prev) => prev + 1);
+  async function getAllBreweries() {
+    const data = await getAllBreweriesApi(page);
+
+    updateBreweries(data);
+  }
+
+  useEffect(() => {
+    getAllBreweries();
+    getBufferData();
+  }, [page]);
+
+  function deleteFactory() {
+    const filtered = breweries.filter(
+      (item) => !selected.some((sel) => sel.id === item.id)
+    );
+
+    const missingCount = 15 - filtered.length;
+    if (missingCount > 0) {
+      const bufferSliced = bufferBreweries.slice(0, missingCount);
+      filtered.push(...bufferSliced);
+    }
+
+    updateBreweries(filtered);
+
+    setCount(count + 1);
+    getBufferData();
+    deleteAllFromSelected([]);
   }
 
   useEffect(() => {
@@ -56,9 +75,10 @@ export default function Home() {
       if (entries[0].isIntersecting) {
         if (firstLoad.current) {
           firstLoad.current = false;
-          return; // пропустить первый запуск
+          return;
         }
-        loadMore();
+
+        setPage((prev) => prev + 1);
       }
     });
 
@@ -74,8 +94,10 @@ export default function Home() {
   return (
     <div className={css.container}>
       <main>
-        <h1 className={css.h1}>Breweries page:{page}</h1>
-        {favorite.length > 0 && (
+        <div>
+          <h1 className={css.h1}>Breweries page:{page}</h1>
+        </div>
+        {selected.length > 0 && (
           <button
             className={css.deleteBtn}
             type="button"
@@ -85,8 +107,8 @@ export default function Home() {
           </button>
         )}
         <div className={css.breweriesDiv}>
-          {filtered.map((brewery) => (
-            <Factory key={brewery.id} brewery={brewery} />
+          {breweries.map((brewery, index) => (
+            <Factory key={brewery.id + index} brewery={brewery} />
           ))}
         </div>
       </main>

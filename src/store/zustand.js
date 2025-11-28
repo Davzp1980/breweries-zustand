@@ -1,27 +1,30 @@
 import { create } from "zustand";
-import currentFactory from "../app/currentFactory/page";
 
 export const BreweriesStore = create((set) => ({
   isLiked: false,
   breweries: [],
-  favorite: [],
-  forDelete: "",
+  bufferBreweries: [],
+  selected: [],
+
   currentFactory: {},
 
   setBreweries: (newBreweries) => set({ breweries: newBreweries }),
-  setIsLiked: (like) => set({ isLiked: like }),
-  setFavorite: (newFavorite) =>
+  // setIsLiked: (like) => set({ isLiked: like }),
+  setSelected: (newSelected) =>
     set((state) => ({
-      favorite: [...state.favorite, newFavorite],
-    })),
-  // setForDelete: (id) => set({ forDelete: id }),
-  deleteFromFavorite: (id) =>
-    set((state) => ({
-      favorite: state.favorite.filter((fav) => fav.id != id),
+      selected: [...state.selected, newSelected],
     })),
 
-  deleteAllFromFavorite: () => set({ favorite: [] }),
+  deleteFromSelected: (id) =>
+    set((state) => ({
+      selected: state.selected.filter((fav) => fav.id != id),
+    })),
+
+  deleteAllFromSelected: () => set({ selected: [] }),
 
   setCurrentFactory: (newCurrentFactory) =>
     set({ currentFactory: newCurrentFactory }),
+
+  setBufferBreweries: (newBufferBreweries) =>
+    set({ bufferBreweries: newBufferBreweries }),
 }));

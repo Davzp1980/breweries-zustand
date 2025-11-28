@@ -6,9 +6,17 @@ import Link from "next/link";
 
 function currentFactory() {
   const brewery = BreweriesStore(selectCurrentFactory);
+
+  const deleteAllFromSelected = BreweriesStore(
+    (state) => state.deleteAllFromSelected
+  );
   return (
     <div className={css.mainDiv}>
-      <Link className={css.link} href={"/"}>
+      <Link
+        className={css.link}
+        href={"/"}
+        onClick={() => deleteAllFromSelected()}
+      >
         Home
       </Link>
       <div className={css.factoryDiv}>

@@ -1,9 +1,9 @@
 import axios from "axios";
 
-export async function getAllBreweriesApi(perPage, page) {
+export async function getAllBreweriesApi(page) {
   try {
     const res = await axios.get(
-      `https://api.openbrewerydb.org/v1/breweries?per_page=${perPage}&page=${page} `
+      `https://api.openbrewerydb.org/v1/breweries?per_page=15&page=${page} `
     );
 
     return res.data;

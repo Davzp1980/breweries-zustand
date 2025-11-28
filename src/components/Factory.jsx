@@ -5,16 +5,19 @@ import css from "./factory.module.css";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
 import { getACurrentBreweriesApi } from "../services/api";
+import { selectSelected } from "../store/selectors";
 function Factory({ brewery }) {
   const router = useRouter();
 
   const [toggleIsLiked, setToggleIsLikedToggle] = useState(false);
 
-  const setFavorite = BreweriesStore((state) => state.setFavorite);
+  const selected = BreweriesStore(selectSelected);
 
-  const deleteFromFactory = BreweriesStore((state) => state.deleteFromFavorite);
+  const deleteFromFactory = BreweriesStore((state) => state.deleteFromSelected);
 
   const setCurrentFactory = BreweriesStore((state) => state.setCurrentFactory);
+
+  const setSelected = BreweriesStore((state) => state.setSelected);
 
   function setIsLikedOn(e, brewery) {
     e.preventDefault();
@@ -25,7 +28,7 @@ function Factory({ brewery }) {
       return;
     }
 
-    setFavorite(brewery);
+    setSelected(brewery);
   }
 
   function openFactory() {
